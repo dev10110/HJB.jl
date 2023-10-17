@@ -4,6 +4,7 @@ import DifferentialEquations as DiffEq
 using StaticArrays
 import Base.Threads.@threads
 import Base.step
+import LoopVectorization: @turbo, @tturbo
 
 
 include("grids.jl")

@@ -47,6 +47,8 @@ using LinearAlgebra
     sol = HJB.solve_MOL(prob, grid; reltol = 1e-1, abstol = 1e-1)
     println("problem solved")
 
+    @time sol = HJB.solve_MOL(prob, grid; reltol = 1e-1, abstol = 1e-1)
+
     @show sol.sol.retcode
     @test sol.sol.retcode == HJB.DiffEq.ReturnCode.Success
 

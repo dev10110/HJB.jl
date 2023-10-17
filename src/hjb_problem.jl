@@ -37,17 +37,32 @@ end
 # function (sol::HJBSolution_MOL)(t, deriv::Val{M}) where M
 #   return sol.sol(t, deriv)
 # end
+#
+
+function gradient(V, grid::Grid{D,F}, ind) where {D, F}
+    return SVector{D, F}(gradient(V, grid, ind, dim) for dim=1:D)
+end
+
+function local_H(prob)
+    return prob.H
+end
+
 
 # convert the HJBProblem into an ODEProblem, given a grid
 function get_ODEProblem(prob::HJBProblem, grid::Grid{D,F}) where {D,F}
 
+    H = local_H(prob)
+
     # define the RHS of the ODE Problem
     function RHS!(dV, V, p, t)
 
-        @inbounds @threads for ind in CartesianIndices(V)
+        # @fastmath @inbounds @threads for ind in CartesianIndices(V)
+        @turbo warn_check_args=true for ind in CartesianIndices(V)
             x = ind2state(grid, ind)
-            DxV = SVector{D,F}(gradient(V, grid, ind, dim) for dim = 1:D)
-            dV[ind] = -prob.H(t, x, V[ind], DxV, p)
+            DxV = gradient(V, grid, ind)
+            dV[ind] =  -H(t, x, V[ind], DxV, p)
+            # dV[ind] = x[1]
+            # dV[ind] = DxV[1]
         end
         return
     end

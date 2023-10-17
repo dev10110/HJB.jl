@@ -6,6 +6,7 @@ version = "1.0.0-DEV"
 [deps]
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+LoopVectorization = "bdcacae8-1622-11e9-2a5c-532679323890"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
