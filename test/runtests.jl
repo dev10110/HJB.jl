@@ -48,7 +48,7 @@ using LinearAlgebra
     println("problem solved")
 
     @show sol.sol.retcode
-    @test sol.sol.retcode == :Success
+    @test sol.sol.retcode == HJB.DiffEq.ReturnCode.Success
 
 
 end
