@@ -3,8 +3,11 @@ abstract type TimeMethod end
 
 struct Direct <: TimeMethod end
 
-struct LaxFriedrichs <: TimeMethod end
+struct LaxFriedrichs <: TimeMethod
+    dissipation_coefficients
+end
 
+struct GlobalLaxFriedrichs <: TimeMethod end
 
 
 ## allow the HJBSolution to be accessed like a function
@@ -22,16 +25,6 @@ struct LaxFriedrichs <: TimeMethod end
 #   return sol.sol(t, deriv)
 # end
 
-# use forward diff to get the gradient of the Hamiltonian wrt to the co-states
-function get_DpH(prob)
-
-    function DpH(t, x, V, DxV)
-        return ForwardDiff.gradient(p -> prob.H(t, x, V, p, prob.params), DxV)
-    end
-
-    return DpH
-end
-
 # provide the default
 function get_ODE_RHS(prob::HJBProblem, grid::Grid{D,F}) where {D,F}
     return get_ODE_RHS(prob, grid, Direct(), Simple())
@@ -45,7 +38,7 @@ function get_ODE_RHS(
 ) where {D,F,G<:GradientMethod}
 
     # construct the RHS function
-    function RHS!(dV, V, p, t)
+    function RHS!(dV, V, params, t)
 
         @inbounds @threads for ind in CartesianIndices(V)
 
@@ -57,7 +50,7 @@ function get_ODE_RHS(
 
             # evaluate the numerical hamiltonian
             DxV = (DxVm + DxVp) / 2
-            dV[ind] = -prob.H(t, x, V[ind], DxV, p)
+            dV[ind] = -prob.H(t, x, V[ind], DxV, params)
 
         end
         return
@@ -75,12 +68,13 @@ function get_ODE_RHS(
     gradMethod::G,
 ) where {D,F,G<:GradientMethod}
     # get the numerical hamiltonian
-    numH = get_numH_lax_friedrichs(prob, grid)
+    numH = get_numH_lax_friedrichs(prob, grid, timeMethod.dissipation_coefficients)
 
     # construct the RHS function
-    function RHS!(dV, V::AF, p, t) where {F,AF<:AbstractArray{F}}
+    function RHS!(dV, V::AF, params, t) where {F,AF<:AbstractArray{F}}
 
-        @inbounds @threads for ind in CartesianIndices(V)
+
+        @threads for ind in CartesianIndices(V)
 
             # get the state
             x = ind2state(grid, ind)
@@ -89,7 +83,7 @@ function get_ODE_RHS(
             DxVm, DxVp = gradient(gradMethod, V, grid, ind)
 
             # evaluate the numerical hamiltonian
-            nH::F = numH(t, x, V[ind], DxVm, DxVp, p)
+            nH::F = numH(t, x, V[ind], DxVm, DxVp, params) 
             dV[ind] = -nH
 
         end
@@ -100,12 +94,13 @@ function get_ODE_RHS(
 
 end
 
+
 # convert the HJBProblem into an ODEProblem, given a grid
 function get_ODEProblem(
     prob::HJBProblem,
     grid::Grid{D,F};
     timeMethod::TM = Direct(),
-    gradMethod::GM = Simple(),
+    gradMethod::GM = Simple()
 ) where {D,F,TM<:TimeMethod,GM<:GradientMethod}
 
     RHS! = get_ODE_RHS(prob, grid, timeMethod, gradMethod)

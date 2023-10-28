@@ -239,9 +239,9 @@ function weno(v)
     # see chapter 3.5 of Osher, Fedkiw Level Set Methods and Dynamic Implicit Surfaces
 
     # compute the eno derivatives
-    ϕ_x_1 = v1 / 3 - 7 * v2 / 6 + 11 * v3 / 6
-    ϕ_x_2 = -v2 / 6 + 5 * v3 / 6 + v4 / 3
-    ϕ_x_3 = v3 / 3 + 5 * v4 / 6 - v5 / 6
+    ϕ_x_1 = (1/3) * v1 + (-7/6) * v2 + (11/6) * v3 
+    ϕ_x_2 = (-1/6) * v2 + (5/6) * v3 + (1/3) * v4 
+    ϕ_x_3 = (1/3) * v3 + (5/6) * v4 + (-1/6) * v5
 
     # compute smoothness of the stencils
     S1 = (13 / 12) * (v1 - 2 * v2 + v3)^2 + (1 / 4) * (v1 - 4 * v2 + 3 * v3)^2
@@ -249,7 +249,9 @@ function weno(v)
     S3 = (13 / 12) * (v3 - 2 * v4 + v5)^2 + (1 / 4) * (3 * v3 - 4 * v4 + v5)^2
 
     # get the weights
-    ϵ = 1e-6 * max(v1^2, v2^2, v3^2, v4^4, v5^2) + 1e-99
+    ϵ0=1e-6
+    ϵ1=1e-12
+    ϵ = ϵ0 * max(v1^2, v2^2, v3^2, v4^4, v5^2) + ϵ1
     α1 = (1 / 10) / (S1 + ϵ)^2
     α2 = (6 / 10) / (S2 + ϵ)^2
     α3 = (3 / 10) / (S3 + ϵ)^2
