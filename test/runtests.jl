@@ -4,30 +4,54 @@ using StaticArrays
 using LinearAlgebra
 
 
-if false
-    @testset "Create Grid and Indexing 1D" begin
+@testset "Create Grid and Indexing 1D" begin
 
-        x1s = range(0.0, 2.0, length = 128)
+    x1s = range(0.0, 2.0, length = 128)
 
-        grid = HJB.Grid((x1s,))
+    grid = HJB.Grid((x1s,))
 
-        @test grid isa HJB.Grid{1,Float64}
+    @test grid isa HJB.Grid{1,Float64}
 
-        for i = 1:length(x1s)
+    for i = 1:length(x1s)
 
-            state = HJB.ind2state(grid, CartesianIndex(i - 1))
-            @test state[1] ≈ x1s[i]
-            ind = HJB.state2ind(grid, state)
+        state = HJB.ind2state(grid, CartesianIndex(i - 1))
+        @test state[1] ≈ x1s[i]
+        ind = HJB.state2ind(grid, state)
 
-            # check that it is approximately in the right spot
-            @test ind in CartesianIndices(((i-2):i,))
+        # check that it is approximately in the right spot
+        @test ind in CartesianIndices(((i-2):i,))
 
-            # @show i, x1s[i], state, ind
-        end
-
+        # @show i, x1s[i], state, ind
     end
 
 end
+
+@testset "Create Grid and Indexing 2D" begin
+
+    x1s = range(0.0, 2.0, length = 128)
+    x2s = range(-2.0, 2.0, length = 256)
+
+    grid = HJB.Grid((x1s, x2s))
+
+    @test grid isa HJB.Grid{2,Float64}
+
+    for i = 1:length(x1s)
+        for j = 1:length(x2s)
+
+            state = HJB.ind2state(grid, CartesianIndex(i - 1, j - 1))
+            @test state[1] ≈ x1s[i]
+            @test state[2] ≈ x2s[j]
+            ind = HJB.state2ind(grid, state)
+
+            # check that it is approximately in the right spot
+            @test ind in CartesianIndices(((i-2):i, (j-2):j))
+
+            # @show i, x1s[i], state, ind
+        end
+    end
+
+end
+
 
 
 @testset "gradients of abs(x)" begin
@@ -79,7 +103,7 @@ end
             @test grad_R1 ≈ 1.0
             @test grad_L2 ≈ -1.0
             @test grad_R2 ≈ 1.0
-            @show i, x, grad_L1, grad_L2, grad_R1, grad_R2
+            # @show i, x, grad_L1, grad_L2, grad_R1, grad_R2
         end
 
     end
