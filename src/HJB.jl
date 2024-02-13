@@ -1,9 +1,12 @@
 module HJB
 
-import DifferentialEquations as DiffEq
-using StaticArrays
+# import DifferentialEquations as DiffEq
+import SciMLBase
+using StaticArrays # Check if I really need this
+using OffsetArrays
 import Base.Threads.@threads
 import Base.step
+using LinearAlgebra
 
 
 include("grids.jl")
