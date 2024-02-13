@@ -74,7 +74,7 @@ CentralWenoGradient() = CentralWenoGradient(1e-6)
     StencilGradient(inds)
 Returns a stencil based gradient operator, using Fornberg's method. Actually implemented using https://discourse.julialang.org/t/generating-finite-difference-stencils/85876/5
 """
-struct StencilGradient{T, W}
+struct StencilGradient{T,W}
     inds::UnitRange{T}
     weights::W
 end
@@ -83,7 +83,7 @@ end
 function StencilGradient(inds::UnitRange{T}) where {T}
 
     x = inds
-    x0 = 0//1
+    x0 = 0 // 1
     m = 1
 
     l = 0:length(x)-1
@@ -119,7 +119,7 @@ end
 function gradient(method::CentralGradient, data, grid, ind, dim)
     indH = step(ind, dim, 1)
     indL = step(ind, dim, -1)
-    return (data[indH] - data[indL]) / (2*grid.dx[dim])
+    return (data[indH] - data[indL]) / (2 * grid.dx[dim])
 end
 
 function gradient(method::StencilGradient, data, grid, ind, dim)
@@ -136,13 +136,13 @@ end
 
 function gradient(method::LeftWenoGradient, data, grid, ind, dim)
     # refer to Section 3.4 of Osher Fedkiw Level Set Methods
-    v = ntuple( i-> gradient(LeftGradient(), data, grid, step(ind, dim, i-3), dim), 5)
+    v = ntuple(i -> gradient(LeftGradient(), data, grid, step(ind, dim, i - 3), dim), 5)
     return weno(v, method.ϵ)
 end
 
 function gradient(method::RightWenoGradient, data, grid, ind, dim)
     # refer to Section 3.4 of Osher Fedkiw Level Set Methods
-    v = ntuple( i-> gradient(RightGradient(), data, grid, step(ind, dim, 3 - i), dim), 5)
+    v = ntuple(i -> gradient(RightGradient(), data, grid, step(ind, dim, 3 - i), dim), 5)
     return weno(v, method.ϵ)
 end
 
@@ -157,16 +157,16 @@ end
 helper function to compute the WENO gradient given `v=(v1,v2,v3,v4,v5)`
 See Sec 3.5 of Osher, Fedkiw, Level Set Methods and Dynamic Implicit Surfaces.
 """
-function weno(v, ϵ=1e-6)
+function weno(v, ϵ = 1e-6)
     # see chapter 3.5 of Osher, Fedkiw Level Set Methods and Dynamic Implicit Surfaces
-    
+
     # expand out the tuple of values 
     v1, v2, v3, v4, v5 = v
 
     # compute the eno derivatives
-    ϕx_1 = (1//3) * v1 + (-7//6) * v2 + (11//6) * v3
-    ϕx_2 = (-1//6) * v2 + (5//6) * v3 + (1//3) * v4
-    ϕx_3 = (1//3) * v3 + (5//6) * v4 + (-1//6) * v5
+    ϕx_1 = (1 // 3) * v1 + (-7 // 6) * v2 + (11 // 6) * v3
+    ϕx_2 = (-1 // 6) * v2 + (5 // 6) * v3 + (1 // 3) * v4
+    ϕx_3 = (1 // 3) * v3 + (5 // 6) * v4 + (-1 // 6) * v5
 
     # compute smoothness of the stencils
     S1 = (13 // 12) * (v1 - 2 * v2 + v3)^2 + (1 // 4) * (v1 - 4 * v2 + 3 * v3)^2
@@ -190,7 +190,3 @@ function weno(v, ϵ=1e-6)
 
     return w1 * ϕx_1 + w2 * ϕx_2 + w3 * ϕx_3
 end
-
-
-
-

@@ -21,7 +21,7 @@ end
     Grid( (x1s, x2s, ...) )
 a simpler constructor for a grid, where you pass in a tuple of `xis <: AbstractRange`. 
 """
-function Grid(xs::T, padding=3) where {D, R<:AbstractRange, T<:NTuple{D,R}}
+function Grid(xs::T, padding = 3) where {D,R<:AbstractRange,T<:NTuple{D,R}}
 
     x0 = Tuple(ntuple(i -> xs[i][1], D) |> collect)
     dx = Tuple(ntuple(i -> step(xs[i]), D) |> collect)
@@ -44,7 +44,7 @@ end
 returns a `SVector` with the state at the `ind` in the `grid`
 """
 @inline function ind2state(grid::Grid{D,F}, ind::CartesianIndex) where {D,F}
-    return SVector{D, F}(ntuple(i -> grid.x0[i] + ind[i] * grid.dx[i], D))
+    return SVector{D,F}(ntuple(i -> grid.x0[i] + ind[i] * grid.dx[i], D))
 end
 
 """
@@ -53,7 +53,7 @@ returns a `CartesianIndex` corresponding to the `state` in the `grid`
 """
 @inline function state2ind(grid::Grid{D,F}, state) where {D,F}
     # ind = ntuple(i -> round(Int, (state[i] - grid.x0[i]) ÷ grid.dx[i]), D)
-    ind = ntuple(i -> Int(cld( (state[i] - grid.x0[i]), grid.dx[i])), D)
+    ind = ntuple(i -> Int(cld((state[i] - grid.x0[i]), grid.dx[i])), D)
     return CartesianIndex(ind)
 end
 
@@ -64,15 +64,15 @@ end
 
 returns a `CartesianIndices` of a grid that correspond to the main computation domain, i.e., excluding any padding cells.
 """
-function DomainIndices(grid::Grid{D, F}) where {D, F}
-    return CartesianIndices(ntuple( i-> (0:(grid.Ns[i]-1)), D) )
+function DomainIndices(grid::Grid{D,F}) where {D,F}
+    return CartesianIndices(ntuple(i -> (0:(grid.Ns[i]-1)), D))
 end
 
 """
     LeftBoundaryIndices(grid, dim)
 returns a `CartesianIndices` of a `grid` that correspond to the left boundary of the computation domain along the `dim` dimension
 """
-function LeftBoundaryIndices(grid::Grid{D, F}, dim) where {D, F}
+function LeftBoundaryIndices(grid::Grid{D,F}, dim) where {D,F}
     return CartesianIndices(ntuple(i -> (i == dim) ? (0:0) : (0:(grid.Ns[i]-1)), D))
 end
 
@@ -80,8 +80,8 @@ end
     RightBoundaryIndices(grid, dim)
 returns a `CartesianIndices` of a `grid` that correspond to the right boundary of the computation domain along the `dim` dimension
 """
-function RightBoundaryIndices(grid::Grid{D, F}, dim) where {D, F}
-    Nax = grid.Ns[dim]-1
+function RightBoundaryIndices(grid::Grid{D,F}, dim) where {D,F}
+    Nax = grid.Ns[dim] - 1
     return CartesianIndices(ntuple(i -> (i == dim) ? (Nax:Nax) : (0:(grid.Ns[i]-1)), D))
 end
 
@@ -90,7 +90,7 @@ end
 
 returns a range that defines the `axis` of the grid along `dim`. Useful for plotting. 
 """
-function getDomainAxes(grid::Grid{D, F}, dim::Integer) where {D, F}
+function getDomainAxes(grid::Grid{D,F}, dim::Integer) where {D,F}
     return grid.x0[dim] .+ (0:(grid.Ns[dim]-1)) * grid.dx[dim]
 end
 
@@ -102,14 +102,14 @@ The offset array is of `D` dimensions, and has the correct number of entries alo
 
 Elements are uninitialized.
 """
-function allocate_grid(T, grid::Grid{D, F}) where {D, F}
+function allocate_grid(T, grid::Grid{D,F}) where {D,F}
 
     # allocate the memory
     new_size = grid.Ns .+ (2 * grid.padding)
     data = Array{T}(undef, new_size)
 
     # convert to offset arrays
-    new_axes = ntuple( i -> ( (-grid.padding):(grid.Ns[i] + grid.padding-1)), D)
+    new_axes = ntuple(i -> ((-grid.padding):(grid.Ns[i]+grid.padding-1)), D)
     odata = OffsetArray(data, new_axes...)
 
     return odata
@@ -122,10 +122,10 @@ returns an `OffsetArray` that will be used to store the value function. The Offs
 The offset array is of `D` dimensions, and has the correct number of entries along each dimension. 
 Each element of the array will be filled with `f(x)` where `x` is the physical location corresponding to the grid cell. All padding cells are filled with `v`. 
 """
-function allocate_grid(T, grid::Grid{D, F}, f, v=0) where {D, F}
+function allocate_grid(T, grid::Grid{D,F}, f, v = 0) where {D,F}
 
     odata = allocate_grid(T, grid)
-    
+
     # now fill with the function
     @threads for ind in CartesianIndices(odata)
         if ind in DomainIndices(grid)
@@ -135,10 +135,10 @@ function allocate_grid(T, grid::Grid{D, F}, f, v=0) where {D, F}
             odata[ind] = v
         end
     end
-    
+
     return odata
 end
 
-function allocate_grid(grid::Grid{D, F}, f, v=0) where {D, F}
+function allocate_grid(grid::Grid{D,F}, f, v = 0) where {D,F}
     return allocate_grid(Float64, grid, f, v)
 end
