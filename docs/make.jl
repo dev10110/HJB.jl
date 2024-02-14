@@ -1,3 +1,5 @@
+push!(LOAD_PATH, "../src/")
+
 using HJB
 using Documenter
 
@@ -14,7 +16,12 @@ makedocs(;
         edit_link = "main",
         assets = String[],
     ),
-    pages = ["Home" => "index.md"],
+    pages = [
+        "Home" => "index.md",
+        "Quickstart" => "quickstart.md",
+        "Spatial Derivatives" => "spatial_derivatives.md",
+        "API" => "api.md",
+    ],
 )
 
 deploydocs(; repo = "github.com/dev10110/HJB.jl", devbranch = "main")

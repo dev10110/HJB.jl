@@ -19,21 +19,30 @@ abstract type GradientMethod end
 """
     LeftGradient()
 
-Returns the first order left gradient, (u[i] - u[i-1])/dx
+Returns the first order left gradient, 
+```math
+\\frac{u[i] - u[i-1]}{dx}
+```
 """
 struct LeftGradient <: GradientMethod end
 
 """
     RightGradient()
 
-Returns first order right gradient (u[i+1] - u[i])/dx 
+Returns first order right gradient 
+```math
+\\frac{u[i+1] - u[i]}{dx} 
+```
 """
 struct RightGradient <: GradientMethod end
 
 """
     CentralGradient()
 
-Returns second order central gradient  (u[i+1] - u[i-1])/(2 dx)
+Returns second order central gradient, 
+```math
+\\frac{u[i+1] - u[i-1]}{2 dx}
+```
 """
 struct CentralGradient <: GradientMethod end
 
@@ -72,7 +81,10 @@ CentralWenoGradient() = CentralWenoGradient(1e-6)
 
 """
     StencilGradient(inds)
-Returns a stencil based gradient operator, using Fornberg's method. Actually implemented using https://discourse.julialang.org/t/generating-finite-difference-stencils/85876/5
+Returns a stencil based gradient operator, using Fornberg's method. Actually implemented using [this trick from Steven Johnson](https://discourse.julialang.org/t/generating-finite-difference-stencils/85876/5). Given a list of relative `inds`, it can compute the weights `w_i` necessary such that the derivative is approximated by
+```math
+\\frac{1}{dx} \\sum_{i \\in inds} w[i] u[i]
+```
 """
 struct StencilGradient{T,W}
     inds::UnitRange{T}
@@ -168,7 +180,7 @@ function weno(v, ϵ = 1e-6)
     ϕx_2 = (-1 // 6) * v2 + (5 // 6) * v3 + (1 // 3) * v4
     ϕx_3 = (1 // 3) * v3 + (5 // 6) * v4 + (-1 // 6) * v5
 
-    # compute smoothness of the stencils
+    # compute smoothness z;eof the stencils
     S1 = (13 // 12) * (v1 - 2 * v2 + v3)^2 + (1 // 4) * (v1 - 4 * v2 + 3 * v3)^2
     S2 = (13 // 12) * (v2 - 2 * v3 + v4)^2 + (1 // 4) * (v2 - v4)^2
     S3 = (13 // 12) * (v3 - 2 * v4 + v5)^2 + (1 // 4) * (3 * v3 - 4 * v4 + v5)^2

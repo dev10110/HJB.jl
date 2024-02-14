@@ -162,6 +162,7 @@ hjb_plot(grid2, data2)
 
 # plot 3D:
 hjb_plot(grid3, data3, (1, 2), [0, 0, 1.0])
+```
 
 """
 hjb_plot
